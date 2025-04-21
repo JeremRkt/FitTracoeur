@@ -1,8 +1,10 @@
 package fr.dev.fitracoeur.service;
 
+import fr.dev.fitracoeur.dto.usermanagement.UserDTO;
 import fr.dev.fitracoeur.dto.usermanagement.UserUpdateDTO;
 import fr.dev.fitracoeur.exception.DuplicateEmailException;
 import fr.dev.fitracoeur.model.User;
+import fr.dev.fitracoeur.model.enums.Gender;
 import fr.dev.fitracoeur.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,14 +16,21 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+
 
     @Transactional
-    public User createUser(UserUpdateDTO userDTO){
-        validateUniqueConstraints
+    public User createUser(UserDTO userDTO){
+        validateUniqueConstraints(userDTO.getUsername(), userDTO.getEmail());
+        User user = new User();
+        user.setUsername(userDTO.getUsername());
+        user.setEmail(userDTO.getEmail());
+        //user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        user.setBirthDate(userDTO.getBirthDate());
+        user.setGender(Gender.valueOf(userDTO.getGender().toUpperCase()));
+        return userRepository.save(user);
     }
 
-    private void validateUniqueConstratints(String username, String email){
+    private void validateUniqueConstraints(String username, String email){
         validateUniqueMail(email);
         validateUniqueUsername(username);
     }
@@ -37,5 +46,6 @@ public class UserService {
             throw new IllegalArgumentException("Username already in use :" + username);
         }
     }
+
 
 }
